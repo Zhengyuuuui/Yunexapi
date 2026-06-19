@@ -743,6 +743,446 @@ html.dark .sbg-variant-green {
   -webkit-text-fill-color: transparent;
 }
 
+/* ==================== 首页 Motion Ring Hero ==================== */
+.motion-hero-showcase {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1180px;
+  min-height: min(860px, calc(100dvh - 120px));
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.motion-hero-copy {
+  position: relative;
+  z-index: 3;
+  max-width: 760px;
+  margin: clamp(-32px, -3vw, -18px) auto 0;
+}
+
+.motion-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 7px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1;
+  backdrop-filter: blur(16px);
+}
+
+.motion-hero-copy h1 {
+  max-width: 760px;
+  margin: 20px auto 0;
+  color: #111827;
+  font-size: clamp(42px, 5.8vw, 76px);
+  font-weight: 760;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.motion-hero-copy p {
+  max-width: 680px;
+  margin: 18px auto 0;
+  color: #64748b;
+  font-size: clamp(15px, 1.8vw, 17px);
+  line-height: 1.85;
+}
+
+.motion-hero-stage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  place-items: center;
+}
+
+.motion-hero-stage::before {
+  content: '';
+  position: absolute;
+  inset: 8% 7% 5%;
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      circle at 42% 42%,
+      rgba(255, 255, 255, 0.9),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 48% 52%,
+      rgba(99, 102, 241, 0.12),
+      transparent 62%
+    ),
+    radial-gradient(circle at 58% 48%, rgba(20, 184, 166, 0.1), transparent 58%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.motion-hero-scene {
+  position: relative;
+  width: min(100%, 860px);
+  aspect-ratio: 854 / 624;
+  overflow: visible;
+}
+
+.motion-orb-field {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 54%;
+  animation: motion-orbit 18s linear infinite;
+  will-change: transform;
+}
+
+.motion-orb-shell {
+  position: absolute;
+  z-index: 1;
+  width: var(--orb-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  animation: motion-keep-upright 18s linear infinite;
+  will-change: transform;
+}
+
+.motion-orb-shell.is-active {
+  z-index: 4;
+}
+
+.motion-orb {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--orb-color);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  opacity: 0.95;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.motion-orb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #efedf3;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.motion-orb-shell.is-active .motion-orb {
+  background: var(--orb-color);
+  box-shadow:
+    0 18px 44px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.62);
+  animation: motion-featured-pulse 3.6s cubic-bezier(0.42, 0, 0.18, 1) both;
+}
+
+.motion-orb-shell.is-active .motion-orb::before {
+  animation: motion-active-surface 3.6s cubic-bezier(0.42, 0, 0.18, 1) both;
+}
+
+.motion-orb img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.58);
+  animation: motion-image-reveal 3.6s cubic-bezier(0.42, 0, 0.18, 1) both;
+}
+
+.motion-center-logo {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  z-index: 5;
+  display: grid;
+  width: clamp(118px, 15vw, 178px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.76),
+    0 18px 54px rgba(15, 23, 42, 0.08);
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(18px);
+}
+
+.motion-center-logo img {
+  display: block;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+}
+
+@keyframes motion-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes motion-keep-upright {
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+@keyframes motion-featured-pulse {
+  0%,
+  12%,
+  100% {
+    transform: scale(1);
+  }
+
+  38%,
+  68% {
+    transform: scale(var(--orb-scale));
+  }
+}
+
+@keyframes motion-active-surface {
+  0%,
+  12%,
+  100% {
+    opacity: 0;
+  }
+
+  38%,
+  68% {
+    opacity: 1;
+  }
+}
+
+@keyframes motion-image-reveal {
+  0%,
+  22%,
+  82%,
+  100% {
+    opacity: 0;
+    transform: scale(0.58);
+  }
+
+  42%,
+  66% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .motion-hero-showcase {
+    min-height: auto;
+  }
+
+  .motion-hero-copy {
+    margin-top: -12px;
+  }
+
+  .motion-hero-scene {
+    width: min(100%, 720px);
+  }
+}
+
+@media (max-width: 640px) {
+  .motion-hero-copy h1 {
+    font-size: 40px;
+  }
+
+  .motion-hero-copy p {
+    font-size: 15px;
+  }
+
+  .motion-hero-stage {
+    margin-top: -8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-orb-field,
+  .motion-orb-shell,
+  .motion-orb-shell.is-active .motion-orb,
+  .motion-orb-shell.is-active .motion-orb::before,
+  .motion-orb img {
+    animation: none !important;
+  }
+}
+
+/* ==================== 首页供应商 Logo Wall ==================== */
+.provider-marquee {
+  position: relative;
+  width: min(100vw, 1040px);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.provider-marquee-mask {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+  padding: 6px 0;
+}
+
+.provider-marquee-mask::before,
+.provider-marquee-mask::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  width: clamp(52px, 10vw, 128px);
+  height: 100%;
+  pointer-events: none;
+}
+
+.provider-marquee-mask::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--semi-color-bg-0), transparent);
+}
+
+.provider-marquee-mask::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--semi-color-bg-0), transparent);
+}
+
+.provider-marquee-row {
+  display: flex;
+  overflow: hidden;
+}
+
+.provider-marquee-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  will-change: transform;
+}
+
+.provider-marquee:hover .provider-marquee-track,
+.provider-marquee-row:hover .provider-marquee-track {
+  animation-play-state: paused;
+}
+
+.provider-row-left .provider-marquee-track {
+  animation: provider-marquee-left 42s linear infinite;
+}
+
+.provider-row-right .provider-marquee-track {
+  animation: provider-marquee-right 46s linear infinite;
+}
+
+.provider-logo-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(72px, 8vw, 98px);
+  min-height: 56px;
+  padding: 4px clamp(14px, 2.1vw, 24px);
+  color: var(--semi-color-text-0);
+  opacity: 0.72;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease,
+    filter 0.25s ease;
+}
+
+.provider-logo-item svg {
+  width: clamp(34px, 4.6vw, 44px) !important;
+  height: clamp(34px, 4.6vw, 44px) !important;
+}
+
+.provider-logo-item:hover {
+  opacity: 1;
+  transform: translate3d(0, -2px, 0) scale(1.06);
+  filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.12));
+}
+
+@keyframes provider-marquee-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes provider-marquee-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (max-width: 640px) {
+  .provider-marquee {
+    width: 100%;
+  }
+
+  .provider-marquee-mask {
+    gap: 14px;
+  }
+
+  .provider-logo-item {
+    width: 68px;
+    min-height: 48px;
+    padding-inline: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .provider-marquee {
+    width: 100%;
+  }
+
+  .provider-marquee-mask {
+    align-items: center;
+  }
+
+  .provider-marquee-mask::before,
+  .provider-marquee-mask::after {
+    display: none;
+  }
+
+  .provider-marquee-row {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .provider-marquee-track {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: none !important;
+  }
+
+  .provider-logo-item-duplicate {
+    display: none;
+  }
+}
+
 /* ==================== ScrollList 定制样式 ==================== */
 .semi-scrolllist,
 .semi-scrolllist * {

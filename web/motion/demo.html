@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apple Ring Demo</title>
+  <style>
+    :root {
+      --stage-w: 854px;
+      --stage-h: 624px;
+      --scene-scale: 1;
+      --scene-top: 50vh;
+      --copy-top: 432px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    body {
+      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      min-height: 100svh;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .scene {
+      position: absolute;
+      left: 50%;
+      top: var(--scene-top);
+      width: var(--stage-w);
+      height: var(--stage-h);
+      transform: translate(-50%, -50%) scale(var(--scene-scale));
+      transform-origin: 50% 50%;
+    }
+
+    .stage::before,
+    .stage::after {
+      position: absolute;
+      top: 0;
+      z-index: 3;
+      width: 12px;
+      height: 100%;
+      background: #050505;
+      content: "";
+    }
+
+    .stage::before {
+      left: 0;
+    }
+
+    .stage::after {
+      right: 0;
+    }
+
+    .orb-field {
+      position: absolute;
+      inset: 0;
+      transform-origin: 427px 337px;
+      animation: orbit 14s linear infinite;
+      will-change: transform;
+    }
+
+    .dot-shell {
+      position: absolute;
+      z-index: 1;
+      width: var(--size);
+      height: var(--size);
+      animation: keep-upright 14s linear infinite;
+      transform: translate(-50%, -50%);
+      transform-origin: 50% 50%;
+      transition:
+        left 1s cubic-bezier(0.2, 0.78, 0.22, 1),
+        top 1s cubic-bezier(0.2, 0.78, 0.22, 1),
+        width 1s cubic-bezier(0.2, 0.78, 0.22, 1),
+        height 1s cubic-bezier(0.2, 0.78, 0.22, 1);
+      will-change: transform;
+    }
+
+    .dot-shell.is-active {
+      z-index: 4;
+    }
+
+    .dot {
+      position: relative;
+      display: grid;
+      width: 100%;
+      height: 100%;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--color);
+      opacity: var(--alpha);
+      transform-origin: 50% 50%;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    .dot.is-active {
+      overflow: hidden;
+      background: var(--color);
+      opacity: 1;
+      animation: featured-pulse 4.4s cubic-bezier(0.42, 0, 0.18, 1) 1 both;
+      will-change: transform, background-color;
+    }
+
+    .dot.is-active img {
+      display: block;
+      width: 62%;
+      height: 62%;
+      object-fit: contain;
+      opacity: 0;
+      transform: scale(0.6);
+      animation: image-reveal 4.4s cubic-bezier(0.42, 0, 0.18, 1) 1 both;
+      will-change: opacity, transform;
+    }
+
+    .center-logo {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      z-index: 5;
+      display: grid;
+      width: 142px;
+      height: 142px;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.025),
+        0 16px 48px rgba(0, 0, 0, 0.055);
+      transform: translate(-50%, -50%);
+    }
+
+    .center-logo img {
+      display: block;
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+    }
+
+    .tagline {
+      position: absolute;
+      left: 50%;
+      top: var(--copy-top);
+      z-index: 5;
+      margin: 0;
+      color: #181818;
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition:
+        opacity 520ms ease,
+        transform 520ms ease;
+      white-space: nowrap;
+    }
+
+    .action-panel {
+      position: absolute;
+      left: 50%;
+      bottom: max(34px, calc(env(safe-area-inset-bottom) + 24px));
+      z-index: 6;
+      transform: translateX(-50%);
+      transition:
+        opacity 420ms ease,
+        transform 420ms ease;
+    }
+
+    .action-button {
+      min-width: 132px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
+      transition:
+        background-color 180ms ease,
+        box-shadow 180ms ease,
+        opacity 180ms ease,
+        transform 180ms ease;
+    }
+
+    .action-button:hover {
+      background: #292929;
+      transform: translateY(-1px);
+      box-shadow: 0 17px 38px rgba(0, 0, 0, 0.18);
+    }
+
+    .action-button:disabled {
+      cursor: default;
+      opacity: 0.68;
+      transform: none;
+    }
+
+    .shockwave {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      z-index: 1;
+      width: 142px;
+      height: 142px;
+      border: 3px solid rgba(116, 145, 255, 0.38);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.45);
+    }
+
+    .shockwave.is-visible {
+      animation: shockwave 860ms cubic-bezier(0.13, 0.72, 0.16, 1) 1;
+    }
+
+    .stage.is-gathering .dot-shell,
+    .stage.is-centered .dot-shell {
+      left: 427px !important;
+      top: 337px !important;
+      width: calc(var(--size) * 0.72);
+      height: calc(var(--size) * 0.72);
+    }
+
+    .stage.is-expanded .dot-shell {
+      left: var(--expanded-x) !important;
+      top: var(--expanded-y) !important;
+      width: calc(var(--size) * 1.18);
+      height: calc(var(--size) * 1.18);
+    }
+
+    .stage.show-copy .tagline {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .stage.is-expanded .action-panel {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 16px);
+    }
+
+    @keyframes orbit {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes keep-upright {
+      to {
+        transform: translate(-50%, -50%) rotate(-360deg);
+      }
+    }
+
+    @keyframes featured-pulse {
+      0%,
+      12%,
+      100% {
+        background: var(--color);
+        transform: scale(1);
+      }
+
+      38%,
+      68% {
+        background: #efedf3;
+        transform: scale(var(--active-scale));
+      }
+    }
+
+    @keyframes image-reveal {
+      0%,
+      20%,
+      82%,
+      100% {
+        opacity: 0;
+        transform: scale(0.58);
+      }
+
+      42%,
+      66% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shockwave {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+
+      18% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.24);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .orb-field,
+      .dot-shell,
+      .dot.is-active,
+      .dot.is-active img,
+      .shockwave.is-visible {
+        animation: none;
+      }
+
+      .dot-shell,
+      .tagline,
+      .action-panel {
+        transition: none;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .stage::before,
+      .stage::after {
+        width: 8px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stage::before,
+      .stage::after {
+        display: none;
+      }
+
+      .tagline {
+        font-size: 18px;
+      }
+
+      .action-button {
+        min-width: 144px;
+        height: 48px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" aria-label="Apple logo surrounded by gradient dots">
+    <div class="scene" id="scene">
+      <div class="orb-field" id="orbField"></div>
+      <div class="shockwave" id="shockwave" aria-hidden="true"></div>
+
+      <div class="center-logo" aria-hidden="true">
+        <img src="public/logo.png" alt="" />
+      </div>
+    </div>
+
+    <p class="tagline" id="tagline">Yunex帮你链接全世界。</p>
+
+    <div class="action-panel">
+      <button class="action-button" id="actionButton" type="button">Sign in</button>
+    </div>
+  </main>
+
+    <script>
+    const stage = document.querySelector(".stage");
+    const scene = document.getElementById("scene");
+    const field = document.getElementById("orbField");
+    const actionButton = document.getElementById("actionButton");
+    const shockwave = document.getElementById("shockwave");
+    const baseStage = { width: 854, height: 624 };
+    const orbitCenter = { x: 427, y: 337 };
+
+    const dots = [
+      [278.6,331.9,16.4,[221,201,189]], [283.8,293.3,17.4,[222,188,178]], [300.1,256.7,17.4,[225,174,174]], [325,225.8,17.9,[219,161,171]], [357.3,203.2,17.9,[219,146,162]], [394.7,190.2,17.9,[212,135,154]], [434.3,187.6,18.8,[211,132,151]],
+      [473,196.2,16.9,[209,124,151]], [508.1,213,15.5,[200,120,166]], [539.8,241.4,14.6,[191,114,173]], [557.4,275.6,17.9,[183,118,185]], [567.6,313.7,17.9,[179,112,200]], [567.5,353.6,17.4,[176,116,210]],
+      [556.5,391.4,18.3,[160,133,205]], [536.1,425.5,17.9,[161,150,220]], [506.7,452.1,16.9,[163,160,221]], [471.5,470,16.4,[157,178,228]], [432.7,478.1,16.9,[154,190,227]], [393.4,475.2,16.9,[161,195,227]],
+      [356.3,461.7,16.9,[180,196,214]], [323.7,438.6,16.9,[190,196,201]], [299.1,407.7,16.4,[198,196,198]], [283.3,371.4,16.4,[211,200,193]], [250.7,310,23.5,[228,192,176]], [226.7,280.8,21.6,[224,187,182]],
+      [263.4,264.2,23.5,[225,178,174]], [248.8,229.8,21.2,[221,172,174]], [288.3,223.2,24.9,[226,162,158]], [282.8,186.1,21.2,[221,160,161]], [322.3,190.7,24.9,[223,156,155]], [327.4,153.5,21.6,[220,149,160]],
+      [364.1,168.7,24,[221,138,150]], [379.1,134.3,21.6,[216,135,150]], [410.9,158.8,24.9,[219,127,149]], [434.5,129.5,22.1,[218,123,146]], [458.2,161.9,25.4,[213,122,144]], [489,140.1,21.6,[208,121,150]],
+      [503.2,177.4,26.3,[203,118,155]], [538.4,164.9,20.7,[200,119,161]], [542.2,204.7,25.8,[200,114,168]], [579.3,202.1,21.6,[195,113,174]], [572.1,241.5,24,[195,110,188]], [609.2,248.9,21.6,[190,111,189]],
+      [591.2,285.1,25.8,[187,110,196]], [624.9,302.1,21.6,[181,109,201]], [598.1,331.9,25.4,[178,108,207]], [625.7,357.7,21.6,[176,112,210]], [591.9,379.2,25.8,[169,119,217]], [611.4,411.3,21.2,[167,130,215]],
+      [573,422.9,25.4,[161,135,216]], [583,459,21.6,[156,144,220]], [543.2,460,25.4,[161,152,231]], [543.4,497.6,21.6,[163,158,225]], [504.7,487.6,24.4,[159,163,231]], [494.6,523.8,21.6,[158,173,233]],
+      [459.8,503.7,24,[153,184,232]], [440.4,535.7,20.7,[150,190,237]], [412.6,507,24.9,[153,194,240]], [385.1,532.9,21.2,[156,193,228]], [365.9,497.6,24,[168,194,226]], [332.6,514.9,21.2,[173,194,218]],
+      [323.6,475.8,24,[184,195,210]], [287.2,483.8,20.2,[188,196,208]], [288.9,443.7,24,[196,195,201]], [251.4,441.3,20.7,[198,198,198]], [263.9,403.1,23.5,[203,195,196]], [228.7,390.7,19.7,[209,198,194]],
+      [251,357.4,24,[217,197,188]], [220.5,335.7,20.7,[226,197,180]], [192.7,306.8,31.5,[227,192,174]], [208.1,245.5,31.5,[225,178,171]], [239.6,190.6,32,[223,164,165]], [285,145.9,32,[224,153,156]],
+      [340.4,115.4,32.4,[224,141,156]], [402.1,101.1,32.4,[221,125,147]], [465.4,104,32.4,[218,121,145]], [525.5,123.6,32.4,[211,117,156]], [578.1,159,31.5,[204,115,170]], [619.5,207.3,32.9,[196,111,186]],
+      [645.8,264.8,32.9,[186,107,198]], [656,327.3,33.4,[183,104,213]], [648.8,390.1,32.9,[172,119,222]], [625.2,448.9,32.4,[164,135,227]], [586.2,499.1,32.4,[159,148,225]], [535.5,536.9,32,[159,166,233]],
+      [476.5,559.4,32,[149,182,238]], [413.4,565.2,31.5,[148,195,239]], [351,553.9,31.5,[163,197,227]], [294.4,526.2,30.6,[178,195,214]], [246.9,484,31,[193,193,202]], [212.8,430.8,32,[202,197,195]],
+      [194.1,369.9,32,[219,195,183]]
+    ];
+
+    const animationImages = [
+      "public/Claude.png",
+      "public/deepseek.webp",
+      "public/gemini.webp",
+      "public/zai.webp"
+    ];
+
+    animationImages.forEach((src) => {
+      const image = new Image();
+      image.src = src;
+    });
+
+    const dotNodes = [];
+    let stageMode = "idle";
+
+    function updateViewportLayout() {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const compactHeight = viewportHeight < 560;
+      const narrowScreen = viewportWidth < 640;
+      const reservedBottom = narrowScreen ? 150 : compactHeight ? 108 : 0;
+      const usableHeight = Math.max(320, viewportHeight - reservedBottom);
+      const scale = Math.min(
+        viewportWidth / baseStage.width,
+        usableHeight / baseStage.height,
+        1.36
+      );
+      const sceneTop = reservedBottom > 0 ? usableHeight / 2 : viewportHeight / 2;
+      const copyTop = sceneTop + (432 - baseStage.height / 2) * scale;
+
+      stage.style.setProperty("--scene-scale", scale.toFixed(4));
+      stage.style.setProperty("--scene-top", `${sceneTop.toFixed(1)}px`);
+      stage.style.setProperty("--copy-top", `${copyTop.toFixed(1)}px`);
+    }
+
+    function makeDot(x, y, size, rgb) {
+      const shell = document.createElement("i");
+      const dot = document.createElement("span");
+      const spread = {
+        x: orbitCenter.x + (x - orbitCenter.x) * 1.1,
+        y: orbitCenter.y + (y - orbitCenter.y) * 1.04
+      };
+
+      shell.className = "dot-shell";
+      dot.className = "dot";
+
+      shell.style.left = `${x}px`;
+      shell.style.top = `${y}px`;
+      shell.style.setProperty("--size", `${size}px`);
+      shell.style.setProperty("--color", `rgb(${rgb.join(",")})`);
+      shell.style.setProperty("--alpha", "1");
+      shell.style.setProperty("--active-scale", (132 / size).toFixed(3));
+      shell.style.setProperty("--expanded-x", `${spread.x.toFixed(1)}px`);
+      shell.style.setProperty("--expanded-y", `${spread.y.toFixed(1)}px`);
+      shell.appendChild(dot);
+      field.appendChild(shell);
+      dotNodes.push({ shell, dot });
+    }
+
+    function chooseNextIndex(previousIndex) {
+      if (dotNodes.length < 2) {
+        return 0;
+      }
+
+      let nextIndex = previousIndex;
+      while (nextIndex === previousIndex) {
+        nextIndex = Math.floor(Math.random() * dotNodes.length);
+      }
+      return nextIndex;
+    }
+
+    let activeIndex = -1;
+    let imageIndex = 0;
+    let pulseEnabled = true;
+    let pulseTimer = 0;
+
+    function clearActiveDot(index) {
+      const active = dotNodes[index];
+      if (!active) {
+        return;
+      }
+
+      active.shell.classList.remove("is-active");
+      active.dot.classList.remove("is-active");
+      active.dot.replaceChildren();
+    }
+
+    function runNextPulse() {
+      if (!pulseEnabled) {
+        return;
+      }
+
+      clearActiveDot(activeIndex);
+      activeIndex = chooseNextIndex(activeIndex);
+
+      const active = dotNodes[activeIndex];
+      const image = document.createElement("img");
+      image.src = animationImages[imageIndex % animationImages.length];
+      image.alt = "";
+      imageIndex += 1;
+
+      active.dot.appendChild(image);
+      active.shell.classList.add("is-active");
+      active.dot.classList.add("is-active");
+
+      active.dot.addEventListener("animationend", (event) => {
+        if (event.animationName !== "featured-pulse" || !pulseEnabled) {
+          return;
+        }
+
+        pulseTimer = window.setTimeout(runNextPulse, 220);
+      }, { once: true });
+    }
+
+    function pausePulse() {
+      pulseEnabled = false;
+      window.clearTimeout(pulseTimer);
+      clearActiveDot(activeIndex);
+      activeIndex = -1;
+    }
+
+    function resumePulse(delay = 720) {
+      pulseEnabled = true;
+      window.clearTimeout(pulseTimer);
+      pulseTimer = window.setTimeout(runNextPulse, delay);
+    }
+
+    function triggerShockwave() {
+      shockwave.classList.remove("is-visible");
+      void shockwave.offsetWidth;
+      shockwave.classList.add("is-visible");
+    }
+
+    function handleActionClick() {
+      if (stageMode === "idle") {
+        stageMode = "gathering";
+        pausePulse();
+        actionButton.disabled = true;
+        stage.classList.add("is-gathering");
+
+        window.setTimeout(() => {
+          stage.classList.remove("is-gathering");
+          stage.classList.add("is-centered", "show-copy");
+          triggerShockwave();
+          actionButton.textContent = "继续";
+          actionButton.disabled = false;
+          stageMode = "centered";
+        }, 1020);
+        return;
+      }
+
+      if (stageMode === "centered") {
+        stageMode = "expanding";
+        actionButton.disabled = true;
+        stage.classList.remove("show-copy", "is-centered");
+        stage.classList.add("is-expanded");
+
+        window.setTimeout(() => {
+          stageMode = "expanded";
+          resumePulse(520);
+        }, 1080);
+      }
+    }
+
+    updateViewportLayout();
+    window.addEventListener("resize", updateViewportLayout);
+    window.addEventListener("orientationchange", updateViewportLayout);
+
+    dots.forEach(([x, y, size, rgb]) => makeDot(x, y, size, rgb));
+    actionButton.addEventListener("click", handleActionClick);
+    runNextPulse();
+  </script>
+</body>
+</html>
