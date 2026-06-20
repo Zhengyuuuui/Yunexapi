@@ -17,20 +17,133 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { API, showError } from '../../helpers';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import { useActualTheme } from '../../context/Theme';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 import NoticeModal from '../../components/layout/NoticeModal';
+import { useNavigate } from 'react-router-dom';
+import {
+  Ai2,
+  Ai21,
+  Anthropic,
+  Aya,
+  BAAI,
+  Baichuan,
+  Baidu,
+  Claude,
+  Cohere,
+  Dalle,
+  DeepSeek,
+  Doubao,
+  ElevenLabs,
+  Flux,
+  Gemini,
+  Gemma,
+  GLMV,
+  Grok,
+  Hailuo,
+  Hunyuan,
+  Kimi,
+  Kling,
+  LLaVA,
+  Luma,
+  MetaAI,
+  Midjourney,
+  Minimax,
+  Mistral,
+  Moonshot,
+  NousResearch,
+  OpenAI,
+  OpenChat,
+  PaLM,
+  Perplexity,
+  Pika,
+  Qwen,
+  Qingyan,
+  Runway,
+  Rwkv,
+  Sora,
+  Spark,
+  Stability,
+  Suno,
+  Udio,
+  Wenxin,
+  XAI,
+  Yi,
+  ZAI,
+  ZeroOne,
+  Zhipu,
+} from '@lobehub/icons';
 
-const motionHeroImages = [
-  '/motion/Claude.png',
-  '/motion/deepseek.webp',
-  '/motion/gemini.webp',
-  '/motion/zai.webp',
-];
+const getMotionLogo = (Icon) => Icon.Color || Icon.BrandColor || Icon;
+
+const motionHeroLogos = [
+  OpenAI,
+  Claude,
+  Anthropic,
+  Gemini,
+  DeepSeek,
+  Qwen,
+  Grok,
+  XAI,
+  Zhipu,
+  Moonshot,
+  Kimi,
+  Doubao,
+  Cohere,
+  Wenxin,
+  Spark,
+  Qingyan,
+  Hunyuan,
+  Baichuan,
+  Minimax,
+  Yi,
+  ZeroOne,
+  ZAI,
+  Mistral,
+  Perplexity,
+  MetaAI,
+  Gemma,
+  Ai21,
+  Ai2,
+  Aya,
+  BAAI,
+  Baidu,
+  GLMV,
+  LLaVA,
+  OpenChat,
+  PaLM,
+  Rwkv,
+  NousResearch,
+  Midjourney,
+  Dalle,
+  Sora,
+  Flux,
+  Stability,
+  Runway,
+  Luma,
+  Pika,
+  Kling,
+  Hailuo,
+  Suno,
+  Udio,
+  ElevenLabs,
+].map(getMotionLogo);
+
+const motionOrbSizeBoost = 1.18;
+const motionOrbSettledSizeBoost = 1.3;
+const motionOrbActiveSize = 148;
+const motionOrbCanvasWidth = 854;
+const motionOrbCanvasHeight = 624;
+const motionOrbCenterX = 427;
+const motionOrbCenterY = 337;
+const motionOrbSpreadX = 1.16;
+const motionOrbSpreadY = 1.13;
+const motionOrbSettledSpreadX = 1.27;
+const motionOrbSettledSpreadY = 1.22;
 
 const motionOrbDots = [
   [278.6, 331.9, 16.4, [221, 201, 189]],
@@ -129,12 +242,16 @@ const motionOrbDots = [
 
 const Home = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const actualTheme = useActualTheme();
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
   const [noticeVisible, setNoticeVisible] = useState(false);
   const [activeOrbIndex, setActiveOrbIndex] = useState(0);
   const [activeHeroImageIndex, setActiveHeroImageIndex] = useState(0);
+  const [motionHeroMode, setMotionHeroMode] = useState('idle');
+  const [hoveredOrbIndex, setHoveredOrbIndex] = useState(null);
+  const gatherTimerRef = useRef(null);
   const isMobile = useIsMobile();
 
   const displayHomePageContent = async () => {
@@ -191,12 +308,43 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (motionHeroMode !== 'idle') {
+      return undefined;
+    }
     const timer = setInterval(() => {
       setActiveOrbIndex((index) => (index + 17) % motionOrbDots.length);
       setActiveHeroImageIndex((index) => index + 1);
     }, 3600);
     return () => clearInterval(timer);
+  }, [motionHeroMode]);
+
+  useEffect(() => {
+    return () => {
+      if (gatherTimerRef.current) {
+        window.clearTimeout(gatherTimerRef.current);
+      }
+    };
   }, []);
+
+  const handleExplore = () => {
+    if (motionHeroMode === 'settled') {
+      navigate('/login');
+      return;
+    }
+    if (motionHeroMode === 'gathering') {
+      return;
+    }
+    if (gatherTimerRef.current) {
+      window.clearTimeout(gatherTimerRef.current);
+    }
+    setHoveredOrbIndex(null);
+    setActiveOrbIndex(-1);
+    setMotionHeroMode('gathering');
+    gatherTimerRef.current = window.setTimeout(() => {
+      setMotionHeroMode('settled');
+      gatherTimerRef.current = null;
+    }, 1000);
+  };
 
   return (
     <div className='classic-page-fill classic-home-page w-full overflow-x-hidden'>
@@ -212,40 +360,84 @@ const Home = () => {
             {/* 背景模糊晕染球 */}
             <div className='blur-ball blur-ball-indigo' />
             <div className='blur-ball blur-ball-teal' />
-            <div className='flex items-center justify-center px-4 py-10 md:py-12 min-h-[calc(100dvh-64px)]'>
+            <div className='flex items-start justify-center px-0 pt-8 md:pt-10 pb-16 md:pb-20 min-h-[calc(100dvh-64px)]'>
               {/* 居中内容区 */}
-              <div className='flex flex-col items-center justify-center text-center max-w-6xl mx-auto w-full'>
+              <div className='flex flex-col items-center justify-center text-center max-w-none mx-auto w-full'>
                 <section className='motion-hero-showcase'>
                   <div
                     className='motion-hero-stage'
                     aria-label={t('一个 API，连接所有模型')}
                   >
-                    <div className='motion-hero-scene' aria-hidden='true'>
+                    <div
+                      className={`motion-hero-scene is-${motionHeroMode}`}
+                      aria-hidden='true'
+                    >
                       <div className='motion-orb-field'>
                         {motionOrbDots.map(([x, y, size, rgb], index) => {
-                          const isActive = index === activeOrbIndex;
+                          const isAutoActive =
+                            motionHeroMode === 'idle' &&
+                            index === activeOrbIndex;
+                          const isHoverActive =
+                            motionHeroMode === 'settled' &&
+                            index === hoveredOrbIndex;
+                          const isActive = isAutoActive || isHoverActive;
+                          const sizeBoost =
+                            motionHeroMode === 'settled'
+                              ? motionOrbSettledSizeBoost
+                              : motionOrbSizeBoost;
+                          const spreadX =
+                            motionHeroMode === 'settled'
+                              ? motionOrbSettledSpreadX
+                              : motionOrbSpreadX;
+                          const spreadY =
+                            motionHeroMode === 'settled'
+                              ? motionOrbSettledSpreadY
+                              : motionOrbSpreadY;
+                          const boostedSize = size * sizeBoost;
+                          const displayX =
+                            motionHeroMode === 'gathering'
+                              ? motionOrbCenterX
+                              : motionOrbCenterX +
+                                (x - motionOrbCenterX) * spreadX;
+                          const displayY =
+                            motionHeroMode === 'gathering'
+                              ? motionOrbCenterY
+                              : motionOrbCenterY +
+                                (y - motionOrbCenterY) * spreadY;
+                          const logoIndex = isHoverActive
+                            ? index
+                            : activeHeroImageIndex;
+                          const ActiveLogo =
+                            motionHeroLogos[
+                              logoIndex % motionHeroLogos.length
+                            ];
                           return (
                             <i
                               key={`${x}-${y}-${size}-${index}`}
-                              className={`motion-orb-shell ${isActive ? 'is-active' : ''}`}
+                              className={`motion-orb-shell ${isActive ? 'is-active' : ''} ${isHoverActive ? 'is-hover-active' : ''}`}
+                              onMouseEnter={() => {
+                                if (motionHeroMode === 'settled') {
+                                  setHoveredOrbIndex(index);
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                if (motionHeroMode === 'settled') {
+                                  setHoveredOrbIndex(null);
+                                }
+                              }}
                               style={{
-                                left: `${((x / 854) * 100).toFixed(3)}%`,
-                                top: `${((y / 624) * 100).toFixed(3)}%`,
-                                '--orb-size': `${((size / 854) * 100).toFixed(3)}%`,
+                                left: `${((displayX / motionOrbCanvasWidth) * 100).toFixed(3)}%`,
+                                top: `${((displayY / motionOrbCanvasHeight) * 100).toFixed(3)}%`,
+                                '--orb-size': `${((boostedSize / motionOrbCanvasWidth) * 100).toFixed(3)}%`,
                                 '--orb-color': `rgb(${rgb.join(',')})`,
-                                '--orb-scale': `${Math.max(3.8, 124 / size)}`,
+                                '--orb-scale': `${Math.max(3.8, motionOrbActiveSize / boostedSize)}`,
                               }}
                             >
                               <span className='motion-orb'>
                                 {isActive && (
-                                  <img
-                                    src={
-                                      motionHeroImages[
-                                        activeHeroImageIndex %
-                                          motionHeroImages.length
-                                      ]
-                                    }
-                                    alt=''
+                                  <ActiveLogo
+                                    aria-hidden='true'
+                                    focusable='false'
                                   />
                                 )}
                               </span>
@@ -254,10 +446,20 @@ const Home = () => {
                         })}
                       </div>
                       <div className='motion-center-logo'>
-                        <img src='/motion/logo.png' alt='' />
+                        <img src='/motion/logo-transparent.png' alt='' />
                       </div>
                     </div>
                     <div className='motion-hero-copy'>
+                      <button
+                        className='motion-explore-button'
+                        type='button'
+                        onClick={handleExplore}
+                        disabled={motionHeroMode === 'gathering'}
+                      >
+                        {motionHeroMode === 'idle'
+                          ? t('开始探索')
+                          : t('登录/注册')}
+                      </button>
                       <div className='motion-hero-badge'>
                         {t('OpenAI Compatible Gateway')}
                       </div>

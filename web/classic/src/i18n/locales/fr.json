@@ -3677,6 +3677,7 @@
     "，": ", ",
     "、": ", ",
     "OpenAI Compatible Gateway": "Passerelle compatible OpenAI",
+    "开始探索": "Commencer l’exploration",
     "一个 API，连接所有模型": "Une API pour tous les modèles",
     "统一接入模型渠道、密钥、用量与调用日志，为团队提供稳定的大模型访问层。": "Unifiez les fournisseurs, les clés, l’usage et les journaux d’appels dans une couche d’accès LLM fiable pour les équipes.",
     "Request": "Requête",
