@@ -394,6 +394,10 @@ const Home = () => {
                               ? motionOrbSettledSpreadY
                               : motionOrbSpreadY;
                           const boostedSize = size * sizeBoost;
+                          const orbScale = Math.max(
+                            3.8,
+                            motionOrbActiveSize / boostedSize,
+                          );
                           const displayX =
                             motionHeroMode === 'gathering'
                               ? motionOrbCenterX
@@ -430,7 +434,10 @@ const Home = () => {
                                 top: `${((displayY / motionOrbCanvasHeight) * 100).toFixed(3)}%`,
                                 '--orb-size': `${((boostedSize / motionOrbCanvasWidth) * 100).toFixed(3)}%`,
                                 '--orb-color': `rgb(${rgb.join(',')})`,
-                                '--orb-scale': `${Math.max(3.8, motionOrbActiveSize / boostedSize)}`,
+                                '--orb-scale': `${orbScale}`,
+                                '--orb-icon-size': `${(62 * orbScale).toFixed(3)}%`,
+                                '--orb-icon-scale': `${(1 / orbScale).toFixed(5)}`,
+                                '--orb-icon-reveal-scale': `${(0.58 / orbScale).toFixed(5)}`,
                               }}
                             >
                               <span className='motion-orb'>

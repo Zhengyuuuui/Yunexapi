@@ -1009,8 +1009,16 @@ html.dark .motion-orb-shell.is-active .motion-orb {
   height: 62%;
   object-fit: contain;
   opacity: 0;
-  transform: scale(0.58);
+  transform: scale(var(--orb-icon-reveal-scale, 0.58));
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  shape-rendering: geometricPrecision;
   animation: motion-image-reveal 3.6s cubic-bezier(0.42, 0, 0.18, 1) both;
+}
+
+.motion-orb-shell.is-active .motion-orb :is(img, svg) {
+  width: var(--orb-icon-size, 62%);
+  height: var(--orb-icon-size, 62%);
 }
 
 .motion-hero-scene.is-settled .motion-orb-shell.is-active {
@@ -1048,7 +1056,7 @@ html.dark
   :is(img, svg) {
   animation: none;
   opacity: 1;
-  transform: scale(1);
+  transform: scale(var(--orb-icon-scale, 1));
   transition:
     opacity 0.26s ease,
     transform 0.32s cubic-bezier(0.2, 0.72, 0.16, 1);
@@ -1150,13 +1158,13 @@ html.dark .motion-center-logo img {
   82%,
   100% {
     opacity: 0;
-    transform: scale(0.58);
+    transform: scale(var(--orb-icon-reveal-scale, 0.58));
   }
 
   42%,
   66% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(var(--orb-icon-scale, 1));
   }
 }
 
